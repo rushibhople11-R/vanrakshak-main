@@ -244,6 +244,37 @@ export const mockStorage = {
     return user;
   },
 
+  registerUser(payload: any): User {
+    const newUser: User = {
+      id: `user-${Date.now()}`,
+      username: (payload.email || 'ranger').split('@')[0] || `ranger_${Date.now()}`,
+      name: payload.name || 'Forest Ranger',
+      role: payload.role === 'admin' ? 'admin' : 'ranger',
+      email: payload.email || 'ranger@forest.gov.in',
+      mobileNumber: payload.mobileNumber || '+91 98201 44521',
+      badgeNumber: payload.badgeNumber || `MH-FR-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+      division: payload.division || 'Tadoba-Andhari Tiger Reserve',
+      beat: payload.beat || 'Moharli Core Beat',
+      emergencyContact: payload.emergencyContact || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+    };
+    setStored(STORAGE_KEYS.USER, newUser);
+    return newUser;
+  },
+
+  updateUserProfile(data: Partial<User>): User {
+    const current = this.getCurrentUser();
+    const updated: User = {
+      ...current,
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+    setStored(STORAGE_KEYS.USER, updated);
+    return updated;
+  },
+
   // Nodes
   getNodes(): SensorNode[] {
     return getStored<SensorNode[]>(STORAGE_KEYS.NODES, defaultNodes);

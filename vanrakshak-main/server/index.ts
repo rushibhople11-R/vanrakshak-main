@@ -63,7 +63,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
+  app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`🌲 VanRakshak Backend running on port ${PORT}`);
     console.log(`📡 Ingestion endpoint: http://localhost:${PORT}/api/ingest/alert`);
     console.log(`🛡️ Prototype Demo Mode Active — Using Simulated Sensor Data`);
