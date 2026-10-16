@@ -206,13 +206,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 setActiveTab('register');
                 setErrorMessage(null);
               }}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`flex-1 py-2 px-3 rounded-lg text-xs font-extrabold transition-all ${
                 activeTab === 'register'
-                  ? 'bg-white text-forest-950 shadow-sm'
-                  : 'text-forest-200 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-md font-extrabold'
+                  : 'text-emerald-100 hover:text-white'
               }`}
             >
-              {language === 'hi' ? 'नया रेंजर पंजीकरण' : language === 'mr' ? 'नवीन रेंजर नोंदणी' : 'Ranger Registration'}
+              {language === 'hi' ? 'रेंजर पंजीकरण' : language === 'mr' ? 'रेंजर नोंदणी' : 'Officer Registration'}
             </button>
             <button
               type="button"
@@ -220,10 +220,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 setActiveTab('login');
                 setErrorMessage(null);
               }}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`flex-1 py-2 px-3 rounded-lg text-xs font-extrabold transition-all ${
                 activeTab === 'login'
-                  ? 'bg-white text-forest-950 shadow-sm'
-                  : 'text-forest-200 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-md font-extrabold'
+                  : 'text-emerald-100 hover:text-white'
               }`}
             >
               {language === 'hi' ? 'रेंजर लॉगिन' : language === 'mr' ? 'रेंजर लॉगिन' : 'Officer Login'}

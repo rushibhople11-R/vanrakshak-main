@@ -78,11 +78,51 @@ async function safeRequestJson<T>(
   }
 }
 
+/**
+ * Executes a request first through Vite proxy (`/api/...`), and if the proxy
+ * returns 404, 405, 502, or network error, automatically retries directly against
+ * the Express backend (`http://127.0.0.1:5000/api/...`).
+ */
+async function requestWithFallback<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<{ ok: boolean; status: number; data: T | null; error?: string }> {
+  const normEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+  // 1. Attempt relative path (via Vite dev server proxy)
+  const res1 = await safeRequestJson<T>(`${BASE_URL}${normEndpoint}`, options);
+
+  // Status 2xx is success; 400, 401, 403, 409 are user/input validation responses from the backend
+  if (res1.ok || res1.status === 400 || res1.status === 401 || res1.status === 403 || res1.status === 409) {
+    return res1;
+  }
+
+  // 2. If proxy returned 404, 405 (static file misroute in Vite) or 502/network failure, retry directly to backend
+  try {
+    const directHost = typeof window !== 'undefined' ? window.location.hostname || '127.0.0.1' : '127.0.0.1';
+    const directUrl = `http://${directHost}:5000/api${normEndpoint}`;
+    const res2 = await safeRequestJson<T>(directUrl, options);
+    if (res2.ok || res2.status === 400 || res2.status === 401 || res2.status === 403 || res2.status === 409) {
+      return res2;
+    }
+    // Also try loopback 127.0.0.1 if hostname was localhost
+    if (directHost !== '127.0.0.1') {
+      const res3 = await safeRequestJson<T>(`http://127.0.0.1:5000/api${normEndpoint}`, options);
+      if (res3.ok || res3.status === 400 || res3.status === 401 || res3.status === 403 || res3.status === 409) {
+        return res3;
+      }
+    }
+    return res2;
+  } catch {
+    return res1;
+  }
+}
+
 export const api = {
   // Authentication & User Profile
   async register(payload: RegisterPayload): Promise<{ token: string; user: User; message?: string }> {
-    const res = await safeRequestJson<{ token?: string; user?: User; message?: string; error?: string }>(
-      `${BASE_URL}/auth/register`,
+    const res = await requestWithFallback<{ token?: string; user?: User; message?: string; error?: string }>(
+      '/auth/register',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,8 +136,8 @@ export const api = {
       return { token, user: res.data.user, message: res.data.message || 'Registration successful!' };
     }
 
-    // If backend returned a specific validation or business error (e.g. duplicate mobile number)
-    if (res.error && res.status >= 400 && res.status < 500) {
+    // Only throw true validation errors (e.g. duplicate mobile number or invalid email)
+    if (res.error && (res.status === 400 || res.status === 409 || res.status === 422)) {
       throw new Error(res.error);
     }
 
@@ -114,8 +154,8 @@ export const api = {
   },
 
   async loginWithCredentials(identifier: string, password?: string): Promise<{ token: string; user: User }> {
-    const res = await safeRequestJson<{ token?: string; user?: User; error?: string }>(
-      `${BASE_URL}/auth/login`,
+    const res = await requestWithFallback<{ token?: string; user?: User; error?: string }>(
+      '/auth/login',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,7 +169,7 @@ export const api = {
       return { token, user: res.data.user };
     }
 
-    if (res.error && res.status >= 400 && res.status < 500) {
+    if (res.error && (res.status === 400 || res.status === 401 || res.status === 404)) {
       throw new Error(res.error);
     }
 
@@ -141,8 +181,8 @@ export const api = {
   },
 
   async updateProfile(profileData: Partial<User>): Promise<{ success: boolean; user: User; message?: string }> {
-    const res = await safeRequestJson<{ success: boolean; user: User; message?: string; error?: string }>(
-      `${BASE_URL}/auth/profile`,
+    const res = await requestWithFallback<{ success: boolean; user: User; message?: string; error?: string }>(
+      '/auth/profile',
       {
         method: 'PUT',
         headers: getAuthHeaders(),
@@ -158,7 +198,7 @@ export const api = {
       };
     }
 
-    if (res.error && res.status >= 400 && res.status < 500) {
+    if (res.error && (res.status === 400 || res.status === 404)) {
       throw new Error(res.error);
     }
 
