@@ -340,3 +340,35 @@ authRouter.post('/logout', (req, res) => {
   res.json({ success: true });
 });
 
+/**
+ * GET /api/auth/me
+ * Returns current authenticated officer or 401
+ */
+authRouter.get('/me', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ authenticated: false, user: null });
+  }
+  const token = authHeader.replace('Bearer ', '');
+  let sessionUser = sessions.get(token);
+
+  if (!sessionUser && token.startsWith('vr_token_')) {
+    // Attempt extracting userId from token format vr_token_<userId>_<timestamp>
+    const parts = token.split('_');
+    if (parts.length >= 3) {
+      const extractedId = parts.slice(2, -1).join('_');
+      const dbUser = db.prepare('SELECT * FROM users WHERE id = ?').get(extractedId);
+      if (dbUser) {
+        sessionUser = sanitizeUser(dbUser);
+        sessions.set(token, sessionUser);
+      }
+    }
+  }
+
+  if (sessionUser) {
+    return res.json({ authenticated: true, user: sessionUser });
+  }
+
+  return res.status(401).json({ authenticated: false, user: null });
+});
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { SupportedLanguage, WELCOME_VOICE_SCRIPTS } from '../../services/aiVoiceAssistant';
 import {
@@ -6,6 +6,8 @@ import {
   Volume2,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
+  X,
   CheckCircle2,
   Globe,
   Radio,
@@ -23,6 +25,7 @@ export const WelcomeLanguageModal: React.FC<WelcomeLanguageModalProps> = ({ onCo
     t,
     setLanguage,
     isWelcomeOpen,
+    setIsWelcomeOpen,
     startWithLanguage,
     isSpeaking,
     playVoiceGreeting,
@@ -30,6 +33,25 @@ export const WelcomeLanguageModal: React.FC<WelcomeLanguageModalProps> = ({ onCo
   } = useLanguage();
 
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(language);
+
+  const handleClose = () => {
+    stopVoiceGreeting();
+    setIsWelcomeOpen(false);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    if (isWelcomeOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isWelcomeOpen]);
 
   if (!isWelcomeOpen) return null;
 
@@ -83,12 +105,40 @@ export const WelcomeLanguageModal: React.FC<WelcomeLanguageModalProps> = ({ onCo
   const currentScript = WELCOME_VOICE_SCRIPTS[selectedLang];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-      <div className="relative bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
+        onClick={handleClose}
+      />
+
+      <div className="relative bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8 z-10 animate-in fade-in zoom-in-95 duration-200">
         {/* Top Header Banner in Forest Green & Teal */}
-        <div className="bg-gradient-to-r from-forest-900 via-forest-800 to-tealbrand-800 p-6 sm:p-7 text-white relative overflow-hidden">
+        <div className="bg-gradient-to-r from-forest-900 via-forest-800 to-tealbrand-800 p-5 sm:p-7 text-white relative overflow-hidden">
           {/* Subtle background glow */}
           <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-tealbrand-500/20 blur-2xl pointer-events-none" />
+
+          {/* Top Bar with both Backward option and Cross option to cut preview */}
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-forest-700/60 relative z-10">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all cursor-pointer group"
+              title="Go Back / Cut Preview (Esc)"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-tealbrand-300 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Back to Dashboard</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleClose}
+              className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              title="Close / Cut Preview (Esc)"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
           <div className="relative z-10 space-y-3">
             <div className="flex items-center justify-between">

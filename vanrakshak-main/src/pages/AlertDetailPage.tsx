@@ -7,6 +7,7 @@ import { SpectrogramViewer } from '../components/audio/SpectrogramViewer';
 import { VerificationModal } from '../components/alerts/VerificationModal';
 import {
   ArrowLeft,
+  X,
   AlertTriangle,
   Battery,
   Radio,
@@ -87,21 +88,32 @@ export const AlertDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Back Navigation */}
+      {/* Top Back & Close Navigation */}
       <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-        <button
-          onClick={() => navigate('/alerts')}
-          className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-forest-800 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Live Alerts</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/alerts')}
+            className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-forest-800 transition-colors cursor-pointer group"
+            title="Back to Live Alerts (←)"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back to Live Alerts</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/alerts')}
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Close Alert Preview (✕)"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
         <div className="flex items-center gap-2">
           <span className="font-mono text-xs font-bold text-slate-500">Alert Ref: {alert.id}</span>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-3.5 py-1.5 bg-forest-800 hover:bg-forest-900 text-white text-xs font-semibold rounded-lg shadow-sm"
+            className="px-3.5 py-1.5 bg-forest-800 hover:bg-forest-900 text-white text-xs font-semibold rounded-lg shadow-sm cursor-pointer"
           >
             Update Ranger Status
           </button>

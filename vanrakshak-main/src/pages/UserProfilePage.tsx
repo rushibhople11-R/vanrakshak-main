@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
@@ -26,10 +27,14 @@ import {
   Sparkles,
   ExternalLink,
   Printer,
+  ArrowLeft,
+  X,
+  UserCheck,
 } from 'lucide-react';
 
 export const UserProfilePage: React.FC = () => {
-  const { user, updateProfile, logout, role, isGuest } = useAuth();
+  const navigate = useNavigate();
+  const { user, updateProfile, logout, role, isGuest, isAuthenticated } = useAuth();
   const { language } = useLanguage();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -120,6 +125,96 @@ export const UserProfilePage: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      {/* 0. Top Navigation & Dashboard Preview Bar (Backward option and Cross option to cut preview) */}
+      <div className="flex items-center justify-between p-3.5 px-4 sm:px-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer group shadow-2xs"
+            title="Back to Main Dashboard (←)"
+          >
+            <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back to Dashboard</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/')}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
+            title="Close Profile Preview (✕)"
+            aria-label="Close Preview"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <span className="text-slate-300 hidden sm:inline">|</span>
+          <span className="text-xs font-semibold text-slate-500 hidden md:inline">
+            Officer Profile & ID Card Dashboard Preview
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isAuthenticated ? (
+            <button
+              onClick={async () => {
+                await logout();
+                navigate('/');
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+              title="Sign Out of VanRakshak"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-600" />
+              <span>Sign Out</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setAuthModalTab('login');
+                setIsAuthModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-forest-800 hover:bg-forest-900 text-white text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            >
+              <UserCheck className="w-3.5 h-3.5 text-tealbrand-300" />
+              <span>Sign In</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Signed-Out Warning Banner */}
+      {!isAuthenticated && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-amber-900">You are currently signed out</p>
+              <p className="text-[11px] text-amber-800">
+                Sign in with your registered mobile number/email or register a new officer profile.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => {
+                setAuthModalTab('login');
+                setIsAuthModalOpen(true);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-forest-800 hover:bg-forest-900 text-white font-bold text-xs shadow-xs cursor-pointer"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => {
+                setAuthModalTab('register');
+                setIsAuthModalOpen(true);
+              }}
+              className="px-3.5 py-1.5 rounded-xl border border-amber-300 bg-white hover:bg-amber-100/60 text-amber-900 font-bold text-xs cursor-pointer"
+            >
+              Register New Ranger
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 1. Header Hero Banner */}
       <div className="bg-gradient-to-r from-forest-900 via-forest-800 to-tealbrand-800 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg border border-forest-700">
         <div className="absolute top-0 right-0 w-80 h-80 bg-tealbrand-400/10 rounded-full blur-3xl pointer-events-none" />
@@ -132,7 +227,7 @@ export const UserProfilePage: React.FC = () => {
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                  {user?.name || 'Forest Officer'}
+                  {user?.name || (isAuthenticated ? 'Forest Officer' : 'Guest Officer')}
                 </h1>
                 <span className="px-2.5 py-1 rounded-full bg-tealbrand-400/20 text-tealbrand-200 text-xs font-bold border border-tealbrand-400/30">
                   {user?.badgeNumber || 'MH-FR-2024-089'}
@@ -188,6 +283,20 @@ export const UserProfilePage: React.FC = () => {
             >
               <span>Switch Account</span>
             </button>
+
+            {isAuthenticated && (
+              <button
+                onClick={async () => {
+                  await logout();
+                  navigate('/');
+                }}
+                className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs flex items-center gap-2 shadow-md transition-all cursor-pointer"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

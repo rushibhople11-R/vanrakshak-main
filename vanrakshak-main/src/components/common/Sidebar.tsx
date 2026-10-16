@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard,
   Bell,
@@ -16,6 +17,8 @@ import {
   Volume2,
   Scale,
   UserCheck,
+  UserPlus,
+  LogOut,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -30,6 +33,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const { t } = useLanguage();
+  const { user, logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const navSections = [
     {
       category: t.navCoreMonitoring,
@@ -180,10 +185,63 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Footer info */}
-      <div className="p-3 border-t border-slate-100 text-[11px] text-slate-500 bg-slate-50/50">
-        <p className="font-semibold text-slate-700">VanRakshak Prototype v1.0</p>
-        <p className="text-[10px] text-slate-400">AI for Climate Change Hackathon</p>
+      {/* Footer info & Account / Sign Out status */}
+      <div className="p-3 border-t border-slate-100 bg-slate-50/70 space-y-2">
+        {isAuthenticated && user ? (
+          <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <div
+              className="flex items-center gap-2 truncate cursor-pointer"
+              onClick={() => {
+                if (onCloseMobile) onCloseMobile();
+                navigate('/profile');
+              }}
+              title="View Officer Profile"
+            >
+              <div className="w-7 h-7 rounded-lg bg-forest-800 text-tealbrand-300 font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
+                {user.name ? user.name.charAt(0) : 'R'}
+              </div>
+              <div className="truncate">
+                <p className="text-[11px] font-bold text-slate-900 truncate leading-tight">{user.name}</p>
+                <p className="text-[9px] text-slate-500 capitalize truncate">{user.role}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                if (onCloseMobile) onCloseMobile();
+                await logout();
+                navigate('/');
+              }}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer flex-shrink-0"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200">
+            <span className="text-[11px] text-slate-500 font-medium">Guest Mode</span>
+            <button
+              onClick={() => {
+                if (onCloseMobile) onCloseMobile();
+                navigate('/login');
+              }}
+              className="text-[11px] text-forest-700 hover:text-forest-900 font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Sign In</span>
+            </button>
+          </div>
+        )}
+
+        <div className="text-[10px] text-slate-400 flex items-center justify-between px-1">
+          <p className="font-semibold text-slate-600">VanRakshak v1.0</p>
+          <span className="text-emerald-600 font-semibold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Online</span>
+          </span>
+        </div>
       </div>
     </div>
   );

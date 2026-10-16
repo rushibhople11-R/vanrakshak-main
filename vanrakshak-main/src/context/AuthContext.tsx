@@ -48,10 +48,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(false);
 
   const loadUser = async () => {
+    const isSignedOut = localStorage.getItem('vr_signed_out') === 'true';
+    if (isSignedOut) {
+      setUser(null);
+      return;
+    }
+
     try {
       const res = await api.getMe();
-      if (res.user) {
+      if (res && res.user && res.authenticated) {
         setUser(res.user);
+      } else if (res && res.user) {
+        setUser(res.user);
+      } else {
+        setUser(defaultUser);
       }
     } catch (e) {
       setUser(defaultUser);
@@ -67,6 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await api.register(payload);
       if (res && res.user) {
+        localStorage.removeItem('vr_signed_out');
         setUser(res.user);
         return { success: true, message: res.message || 'Registration successful!' };
       }
@@ -83,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await api.loginWithCredentials(identifier, password);
       if (res && res.user) {
+        localStorage.removeItem('vr_signed_out');
         setUser(res.user);
         return { success: true };
       }
@@ -114,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     try {
       const res = await api.login(newRole);
+      localStorage.removeItem('vr_signed_out');
       setUser(res.user);
     } catch (e) {
       console.error('Failed to switch role', e);
@@ -125,15 +138,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await api.logout();
-      await switchRole('guest');
     } catch (e) {
-      console.error('Logout failed', e);
+      console.warn('Logout warning', e);
     }
+    localStorage.removeItem('vr_token');
+    localStorage.setItem('vr_signed_out', 'true');
+    setUser(null);
   };
 
   const role: UserRole = user?.role || 'ranger';
-  const isGuest = role === 'guest';
-  const isAuthenticated = !isGuest;
+  const isAuthenticated = Boolean(user && user.id && user.role !== 'guest');
+  const isGuest = !isAuthenticated;
 
   return (
     <AuthContext.Provider

@@ -15,6 +15,8 @@ import {
   AlertCircle,
   CheckCircle2,
   ArrowRight,
+  ArrowLeft,
+  X,
   Eye,
   EyeOff,
   UserCheck,
@@ -179,6 +181,26 @@ export const LoginPage: React.FC = () => {
       <div className="max-w-xl w-full bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden space-y-0">
         {/* Top Header Card */}
         <div className="bg-gradient-to-r from-forest-900 via-forest-800 to-tealbrand-800 p-6 text-white text-center relative">
+          {/* Backward Option and Cross Option to Cut Preview */}
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="absolute top-5 left-5 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all cursor-pointer group"
+            title="Back to Dashboard (←)"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-tealbrand-300 group-hover:-translate-x-0.5 transition-transform" />
+            <span className="hidden sm:inline">Back</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="absolute top-5 right-5 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+            title="Close / Cut Preview (✕)"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
           <div className="w-14 h-14 rounded-2xl bg-forest-700/80 border border-forest-600/60 flex items-center justify-center mx-auto mb-3 shadow-md">
             <Shield className="w-8 h-8 text-tealbrand-300" />
           </div>
@@ -288,18 +310,29 @@ export const LoginPage: React.FC = () => {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-forest-900/20 transition-all cursor-pointer"
-                >
-                  <span>
-                    {loading
-                      ? (language === 'hi' ? 'सत्यापन हो रहा है...' : language === 'mr' ? 'तपासत आहे...' : 'Signing In...')
-                      : (language === 'hi' ? 'कमांड सेंटर में लॉग इन करें' : language === 'mr' ? 'लॉग इन करा' : 'Sign In to Command Center')}
-                  </span>
-                  <ArrowRight className="w-4 h-4 text-tealbrand-300" />
-                </button>
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/')}
+                    className="flex-1 py-3 px-4 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Cancel</span>
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-[2] py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-forest-900/20 transition-all cursor-pointer"
+                  >
+                    <span>
+                      {loading
+                        ? (language === 'hi' ? 'सत्यापन हो रहा है...' : language === 'mr' ? 'तपासत आहे...' : 'Signing In...')
+                        : (language === 'hi' ? 'कमांड सेंटर में लॉग इन करें' : language === 'mr' ? 'लॉग इन करा' : 'Sign In to Command Center')}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-tealbrand-300" />
+                  </button>
+                </div>
               </form>
             </div>
           )}
@@ -470,19 +503,30 @@ export const LoginPage: React.FC = () => {
                 />
               </div>
 
-              {/* Submit Registration Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-forest-900/20 transition-all cursor-pointer"
-              >
-                <span>
-                  {loading
-                    ? (language === 'hi' ? 'पंजीकरण हो रहा है...' : language === 'mr' ? 'नोंदणी होत आहे...' : 'Registering...')
-                    : (language === 'hi' ? 'रजिस्टर करें' : language === 'mr' ? 'नोंदणी करा' : 'Register')}
-                </span>
-                <ArrowRight className="w-4 h-4 text-tealbrand-300" />
-              </button>
+              {/* Submit & Cancel Registration Buttons */}
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/')}
+                  className="flex-1 py-3 px-4 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Cancel</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-[2] py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-forest-900/20 transition-all cursor-pointer"
+                >
+                  <span>
+                    {loading
+                      ? (language === 'hi' ? 'पंजीकरण हो रहा है...' : language === 'mr' ? 'नोंदणी होत आहे...' : 'Registering...')
+                      : (language === 'hi' ? 'रजिस्टर करें' : language === 'mr' ? 'नोंदणी करा' : 'Register')}
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-tealbrand-300" />
+                </button>
+              </div>
             </form>
           )}
 

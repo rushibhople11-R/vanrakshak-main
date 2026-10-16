@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Radio, Sparkles, User, ChevronDown, Menu, X, Check, Search, Globe, Volume2, UserCheck, UserPlus } from 'lucide-react';
+import { Shield, Radio, Sparkles, User, ChevronDown, Menu, X, Check, Search, Globe, Volume2, UserCheck, UserPlus, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { UserRole } from '../../types';
@@ -20,7 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuth,
 }) => {
   const navigate = useNavigate();
-  const { user, role, switchRole } = useAuth();
+  const { user, role, switchRole, logout, isAuthenticated } = useAuth();
   const { language, setLanguage, t, setIsWelcomeOpen, playVoiceGreeting, stopVoiceGreeting, isSpeaking } = useLanguage();
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -184,16 +184,43 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* Register New Officer CTA Button */}
-          <button
-            onClick={() => onOpenAuth ? onOpenAuth('register') : navigate('/login')}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-forest-800 hover:bg-forest-900 active:scale-95 transition-all text-white font-bold text-xs rounded-lg shadow-sm shadow-forest-900/10 cursor-pointer"
-            title="Register New Ranger or Sign In"
-          >
-            <UserPlus className="w-3.5 h-3.5 text-tealbrand-300" />
-            <span className="hidden sm:inline">Register / Sign In</span>
-            <span className="sm:hidden">Register</span>
-          </button>
+          {/* Register / Sign In CTA Button */}
+          {isAuthenticated ? (
+            <button
+              onClick={() => onOpenAuth ? onOpenAuth('register') : navigate('/login')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-forest-800 hover:bg-forest-900 active:scale-95 transition-all text-white font-bold text-xs rounded-lg shadow-sm shadow-forest-900/10 cursor-pointer"
+              title="Register New Ranger"
+            >
+              <UserPlus className="w-3.5 h-3.5 text-tealbrand-300" />
+              <span className="hidden sm:inline">Register New Ranger</span>
+              <span className="sm:hidden">Register</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => onOpenAuth ? onOpenAuth('login') : navigate('/login')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-forest-800 hover:bg-forest-900 active:scale-95 transition-all text-white font-bold text-xs rounded-lg shadow-sm shadow-forest-900/10 cursor-pointer"
+              title="Sign In or Register"
+            >
+              <UserCheck className="w-3.5 h-3.5 text-tealbrand-300" />
+              <span className="hidden sm:inline">Sign In / Register</span>
+              <span className="sm:hidden">Sign In</span>
+            </button>
+          )}
+
+          {/* Quick Sign Out Button in Header */}
+          {isAuthenticated && (
+            <button
+              onClick={async () => {
+                await logout();
+                navigate('/');
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-rose-300 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 font-bold text-xs shadow-2xs transition-all cursor-pointer"
+              title="Sign Out of VanRakshak session"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-500" />
+              <span className="hidden md:inline">Sign Out</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenSimulation}
@@ -209,71 +236,129 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-              className="flex items-center gap-2 pl-2.5 pr-2 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white text-xs font-medium text-slate-700 shadow-sm focus:outline-none"
+              className="flex items-center gap-2 pl-2.5 pr-2 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white text-xs font-medium text-slate-700 shadow-sm focus:outline-none cursor-pointer"
             >
               <div className="w-6 h-6 rounded-full bg-forest-100 text-forest-800 flex items-center justify-center font-bold text-[11px]">
-                {user?.name ? user.name.charAt(0) : 'R'}
+                {user?.name ? user.name.charAt(0) : isAuthenticated ? 'R' : '?'}
               </div>
               <div className="text-left hidden md:block">
-                <p className="text-[11px] font-bold text-forest-900 leading-tight">{user?.name || 'Ranger'}</p>
-                <p className="text-[10px] text-slate-500 capitalize">{role} role</p>
+                <p className="text-[11px] font-bold text-forest-900 leading-tight">
+                  {isAuthenticated ? (user?.name || 'Ranger') : 'Signed Out'}
+                </p>
+                <p className="text-[10px] text-slate-500 capitalize">
+                  {isAuthenticated ? `${role} role` : 'Guest Mode'}
+                </p>
               </div>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </button>
 
             {isRoleDropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                {/* Profile & ID Dashboard Link */}
-                <div className="p-2 border-b border-slate-100 bg-slate-50/70">
-                  <button
-                    onClick={() => {
-                      navigate('/profile');
-                      setIsRoleDropdownOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between p-2 rounded-lg bg-forest-800 hover:bg-forest-900 text-white text-xs font-semibold shadow-xs transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <UserCheck className="w-4 h-4 text-tealbrand-300" />
-                      <span>Ranger Profile & ID Card</span>
+                {isAuthenticated ? (
+                  <>
+                    {/* Profile & ID Dashboard Link */}
+                    <div className="p-2 border-b border-slate-100 bg-slate-50/70">
+                      <button
+                        onClick={() => {
+                          navigate('/profile');
+                          setIsRoleDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center justify-between p-2 rounded-lg bg-forest-800 hover:bg-forest-900 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <UserCheck className="w-4 h-4 text-tealbrand-300" />
+                          <span>Ranger Profile & ID Card</span>
+                        </div>
+                      </button>
                     </div>
-                  </button>
-                </div>
 
-                <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Switch Role</p>
-                  <button
-                    onClick={() => {
-                      if (onOpenAuth) {
-                        onOpenAuth('register');
-                      } else {
-                        navigate('/login');
-                      }
-                      setIsRoleDropdownOpen(false);
-                    }}
-                    className="text-[10px] text-forest-700 hover:text-forest-900 font-bold flex items-center gap-1 cursor-pointer"
-                  >
-                    <UserPlus className="w-3 h-3" />
-                    <span>Register / Sign In</span>
-                  </button>
-                </div>
-                {roleOptions.map((opt) => (
-                  <button
-                    key={opt.role}
-                    onClick={() => {
-                      switchRole(opt.role);
-                      setIsRoleDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 flex items-center justify-between text-xs hover:bg-slate-50 transition-colors ${
-                      role === opt.role ? 'bg-forest-50/70 text-forest-900 font-semibold' : 'text-slate-700'
-                    }`}
-                  >
-                    <div>
-                      <p className="font-medium">{opt.title}</p>
-                      <p className="text-[10px] text-slate-500">{opt.label}</p>
+                    <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Switch Role</p>
+                      <button
+                        onClick={() => {
+                          if (onOpenAuth) {
+                            onOpenAuth('register');
+                          } else {
+                            navigate('/login');
+                          }
+                          setIsRoleDropdownOpen(false);
+                        }}
+                        className="text-[10px] text-forest-700 hover:text-forest-900 font-bold flex items-center gap-1 cursor-pointer"
+                      >
+                        <UserPlus className="w-3 h-3" />
+                        <span>Register Ranger</span>
+                      </button>
                     </div>
-                    {role === opt.role && <Check className="w-4 h-4 text-forest-700" />}
-                  </button>
-                ))}
+                    {roleOptions.map((opt) => (
+                      <button
+                        key={opt.role}
+                        onClick={() => {
+                          switchRole(opt.role);
+                          setIsRoleDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 flex items-center justify-between text-xs hover:bg-slate-50 transition-colors ${
+                          role === opt.role ? 'bg-forest-50/70 text-forest-900 font-semibold' : 'text-slate-700'
+                        }`}
+                      >
+                        <div>
+                          <p className="font-medium">{opt.title}</p>
+                          <p className="text-[10px] text-slate-500">{opt.label}</p>
+                        </div>
+                        {role === opt.role && <Check className="w-4 h-4 text-forest-700" />}
+                      </button>
+                    ))}
+
+                    {/* Prominent Sign Out Option in Dropdown */}
+                    <div className="pt-2 mt-1 border-t border-slate-100 px-2">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setIsRoleDropdownOpen(false);
+                          await logout();
+                          navigate('/');
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <LogOut className="w-4 h-4 text-rose-500" />
+                          <span>Sign Out</span>
+                        </div>
+                        <span className="text-[10px] text-rose-400 font-normal">End Session</span>
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-3 space-y-2">
+                    <div className="text-center pb-2 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-800">You are Signed Out</p>
+                      <p className="text-[10px] text-slate-500">Sign in to access your Ranger credentials</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRoleDropdownOpen(false);
+                        if (onOpenAuth) onOpenAuth('login');
+                        else navigate('/login');
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-forest-800 hover:bg-forest-900 text-white font-bold text-xs shadow-xs cursor-pointer"
+                    >
+                      <UserCheck className="w-4 h-4 text-tealbrand-300" />
+                      <span>Sign In as Officer</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRoleDropdownOpen(false);
+                        if (onOpenAuth) onOpenAuth('register');
+                        else navigate('/login');
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs cursor-pointer"
+                    >
+                      <UserPlus className="w-4 h-4 text-forest-700" />
+                      <span>Register New Officer</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

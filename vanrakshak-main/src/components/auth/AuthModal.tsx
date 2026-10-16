@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import {
@@ -15,6 +15,7 @@ import {
   AlertCircle,
   CheckCircle2,
   ArrowRight,
+  ArrowLeft,
   X,
   Sparkles,
 } from 'lucide-react';
@@ -54,6 +55,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Login Form State
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -171,17 +186,37 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
+        onClick={onClose}
+      />
+
+      <div className="relative bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-8 z-10 animate-in fade-in zoom-in-95 duration-200">
         {/* Header with Forest Shield */}
-        <div className="bg-gradient-to-r from-forest-900 via-forest-800 to-tealbrand-800 p-6 text-white relative">
-          <button
-            onClick={onClose}
-            className="absolute top-5 right-5 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-            title="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        <div className="bg-gradient-to-r from-forest-900 via-forest-800 to-tealbrand-800 p-5 sm:p-6 text-white relative">
+          {/* Top Bar with both Backward option and Cross option to cut preview */}
+          <div className="flex items-center justify-between pb-3 mb-2 border-b border-forest-700/60">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all cursor-pointer group"
+              title="Go Back / Cut Preview (Esc)"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-tealbrand-300 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Back to Dashboard</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              title="Close / Cut Preview (Esc)"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-forest-700/80 border border-forest-600 flex items-center justify-center text-tealbrand-300 shadow-md">
@@ -404,19 +439,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 />
               </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-forest-900/20 transition-all cursor-pointer"
-              >
-                <span>
-                  {loading
-                    ? (language === 'hi' ? 'पंजीकरण हो रहा है...' : language === 'mr' ? 'नोंदणी होत आहे...' : 'Registering...')
-                    : (language === 'hi' ? 'रजिस्टर करें' : language === 'mr' ? 'नोंदणी करा' : 'Register')}
-                </span>
-                <ArrowRight className="w-4 h-4 text-tealbrand-300" />
-              </button>
+              {/* Submit & Cancel Buttons */}
+              <div className="flex items-center gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-3 px-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Cancel</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-[2] py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-forest-900/20 transition-all cursor-pointer"
+                >
+                  <span>
+                    {loading
+                      ? (language === 'hi' ? 'पंजीकरण हो रहा है...' : language === 'mr' ? 'नोंदणी होत आहे...' : 'Registering...')
+                      : (language === 'hi' ? 'रजिस्टर करें' : language === 'mr' ? 'नोंदणी करा' : 'Register')}
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-tealbrand-300" />
+                </button>
+              </div>
             </form>
           )}
 
@@ -461,14 +507,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-forest-900/20 transition-all cursor-pointer"
-              >
-                <span>{loading ? (language === 'hi' ? 'सत्यापन हो रहा है...' : language === 'mr' ? 'तपासत आहे...' : 'Signing In...') : (language === 'hi' ? 'लॉग इन करें' : language === 'mr' ? 'लॉग इन करा' : 'Sign In')}</span>
-                <ArrowRight className="w-4 h-4 text-tealbrand-300" />
-              </button>
+              <div className="flex items-center gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-3 px-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Cancel</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-[2] py-3 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-forest-900/20 transition-all cursor-pointer"
+                >
+                  <span>{loading ? (language === 'hi' ? 'सत्यापन हो रहा है...' : language === 'mr' ? 'तपासत आहे...' : 'Signing In...') : (language === 'hi' ? 'लॉग इन करें' : language === 'mr' ? 'लॉग इन करा' : 'Sign In')}</span>
+                  <ArrowRight className="w-4 h-4 text-tealbrand-300" />
+                </button>
+              </div>
             </form>
           )}
         </div>

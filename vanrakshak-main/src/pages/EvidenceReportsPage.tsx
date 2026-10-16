@@ -15,6 +15,8 @@ import {
   Plus,
   RefreshCw,
   Hash,
+  ArrowLeft,
+  X,
 } from 'lucide-react';
 
 export const EvidenceReportsPage: React.FC = () => {
@@ -26,7 +28,7 @@ export const EvidenceReportsPage: React.FC = () => {
   // New report modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetAlertId, setTargetAlertId] = useState('');
-  const [investigatingOfficer, setInvestigatingOfficer] = useState('Divisional Forest Officer Anita Roy');
+  const [investigatingOfficer, setInvestigatingOfficer] = useState('Divisional Forest Officer');
   const [customNotes, setCustomNotes] = useState('');
 
   const loadData = async () => {
@@ -218,11 +220,28 @@ export const EvidenceReportsPage: React.FC = () => {
 
                 <div className="flex items-center gap-2 no-print">
                   <button
+                    onClick={() => setSelectedReport(null)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors cursor-pointer group"
+                    title="Back to Reports List / Cut Preview"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
+                    <span>Back</span>
+                  </button>
+
+                  <button
                     onClick={handlePrint}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>Print Dossier</span>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedReport(null)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    title="Close Preview (✕)"
+                  >
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
